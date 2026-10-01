@@ -22,6 +22,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -223,10 +224,15 @@ fun ResultOverlay(r: PunchResult, onDone: () -> Unit) {
         delay(4000)
         onDone()
     }
-    Box(
+    BoxWithConstraints(
         Modifier.fillMaxSize().background(BG).clickable { onDone() },
         contentAlignment = Alignment.Center
     ) {
+        // dimensioni del testo proporzionali alla larghezza disponibile
+        val avail = maxWidth.value - 48f
+        val greetSize = (avail / 7.4f).coerceIn(24f, 64f).sp
+        val nameSize = (avail / (r.name.length.coerceAtLeast(10) * 0.62f)).coerceIn(20f, 36f).sp
+        val lineSize = (avail / 16f).coerceIn(16f, 24f).sp
         Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             val accent = if (r.ok) GREEN else RED
             Box(Modifier.size(120.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
@@ -237,18 +243,18 @@ fun ResultOverlay(r: PunchResult, onDone: () -> Unit) {
             }
             Spacer(Modifier.height(28.dp))
             if (!r.ok) {
-                Text(r.msg, color = TXT, fontSize = 36.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+                Text(r.msg, color = TXT, fontSize = nameSize, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
             } else {
-                Text(if (r.isIn) "BUONGIORNO" else "ARRIVEDERCI", color = TXT, fontSize = 64.sp, fontWeight = FontWeight.ExtraBold)
+                Text(if (r.isIn) "BUONGIORNO" else "ARRIVEDERCI", color = TXT, fontSize = greetSize, fontWeight = FontWeight.ExtraBold, maxLines = 1, softWrap = false)
                 Spacer(Modifier.height(12.dp))
-                Text(r.name, color = TXT, fontSize = 36.sp, fontWeight = FontWeight.SemiBold)
+                Text(r.name, color = TXT, fontSize = nameSize, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false)
                 Spacer(Modifier.height(16.dp))
-                Text(if (r.isIn) "Entrata registrata: ${r.time}" else "Uscita registrata: ${r.time}", color = TXT, fontSize = 24.sp)
-                if (r.late > 0) Text("Ritardo ${r.late} min", color = AMBER, fontSize = 24.sp)
-                if (r.early > 0) Text("Uscita anticipata ${r.early} min", color = AMBER, fontSize = 24.sp)
+                Text(if (r.isIn) "Entrata registrata: ${r.time}" else "Uscita registrata: ${r.time}", color = TXT, fontSize = lineSize)
+                if (r.late > 0) Text("Ritardo ${r.late} min", color = AMBER, fontSize = lineSize)
+                if (r.early > 0) Text("Uscita anticipata ${r.early} min", color = AMBER, fontSize = lineSize)
                 Spacer(Modifier.height(12.dp))
-                if (!r.isIn) Text("Ore di oggi: ${Fmt.hm(r.dayMin)}", color = MUTED, fontSize = 22.sp)
-                Text("Ore del mese: ${Fmt.hm(r.monthMin)}", color = MUTED, fontSize = 22.sp)
+                if (!r.isIn) Text("Ore di oggi: ${Fmt.hm(r.dayMin)}", color = MUTED, fontSize = lineSize)
+                Text("Ore del mese: ${Fmt.hm(r.monthMin)}", color = MUTED, fontSize = lineSize)
             }
         }
     }
